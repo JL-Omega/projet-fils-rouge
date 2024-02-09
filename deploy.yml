@@ -1,0 +1,24 @@
+---
+- name: Build Docker image
+  hosts: prod
+  tasks:
+
+    - name: copy app directory
+      ansible.builtin.copy:
+        src: .
+        dest: /home/jean-luc/bootcamp-devops/projet-fils-rouge
+        force: false
+
+    - name: Build an image 
+      community.docker.docker_image:
+        build:
+          path: /home/jean-luc/bootcamp-devops/projet-fils-rouge 
+        name: ic-webapp 
+        tag: 1.0
+        state: present
+        source: build
+
+    - name: run containers
+      community.docker.docker_compose:
+        project_src: /home/jean-luc/bootcamp-devops/projet-fils-rouge
+        state: present

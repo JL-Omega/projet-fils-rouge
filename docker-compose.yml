@@ -1,0 +1,62 @@
+version: '3.1'
+services:
+  pgadmin:
+    image: dpage/pgadmin4
+    depends_on:
+      - db
+    ports:
+      - "80:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=user@domain.com
+      - PGADMIN_DEFAULT_PASSWORD=SuperSecret
+    restart: always
+    networks:
+      - odoo_network
+
+  ic-webapp:
+    container_name: test-ic-webapp
+    depends_on: 
+      - web
+    ports:
+      - "4000:5000"
+    environment:
+      - ODOO_URL=http://192.168.1.181:8069
+      - PGADMIN_URL=http://192.168.1.181:80
+    image: ic-webapp:1.0
+    restart: always
+    networks:
+      - odoo_network
+
+  web:
+    image: odoo:16.0
+    depends_on:
+      - db
+    ports:
+      - "8069:8069"
+    volumes:
+      - odoo-web-data:/var/lib/odoo
+      - ./config:/etc/odoo
+      - ./addons:/mnt/extra-addons
+    restart: always
+    networks:
+      - odoo_network
+
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_PASSWORD=odoo
+      - POSTGRES_USER=odoo
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - odoo-db-data:/var/lib/postgresql/data/pgdata
+    restart: always
+    networks:
+      - odoo_network
+
+volumes:
+  odoo-web-data:
+  odoo-db-data:
+
+networks:
+  odoo_network:
